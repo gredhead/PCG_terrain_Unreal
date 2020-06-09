@@ -68,13 +68,13 @@ class Coast_Agent:
     
     def raise_point(self, point):
         new_elevation = 0
-        print("add1: " + str(3 * (noise.pnoise2(point.getX() / 10, point.getY() / 10, 1, .5, 2) + 1)))
+        #print("add1: " + str(3 * (noise.pnoise2(point.getX() / 10, point.getY() / 10, 1, .5, 2) + 1)))
         new_elevation += (3 * (noise.pnoise2(point.getX() / 10, point.getY() / 10, 1, .5, 2) + 1))
-        print("add2: " + str(3 * (noise.pnoise2(point.getX() / 100, point.getY() / 100, 1, .5, 2) + 1)))
+        #print("add2: " + str(3 * (noise.pnoise2(point.getX() / 100, point.getY() / 100, 1, .5, 2) + 1)))
         new_elevation += (3 * (noise.pnoise2(point.getX() / 100, point.getY() / 100, 1, .5, 2) + 1))
         point.set_elevation(new_elevation)
         point.set_biome('coast')
-        print("raised: " + str(point))
+        #print("raised: " + str(point))
         return point
     
     def assign_beacons(self, point, height_map):

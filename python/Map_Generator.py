@@ -8,8 +8,7 @@ from PIL import Image
 import png
 import numpy as np
 
-# Map_Generator(1024, 1024, 1, 17, 4, 3, 5, 2, 15, 10, 240, 50, 50)
-
+# Map_Generator(       1024,  1024,   1,    17,         4,                3,      5,            2,                15,            10,             240,                 50,          50)
 class Map_Generator:
     def __init__(self, width, height, seed, coast_size, coast_smoothness, inland, beach_height, coast_uniformity, num_mountains, mountain_width, mountain_max_height, squiggliness, mountain_smoothness):
         self.width = width
@@ -105,16 +104,25 @@ class Map_Generator:
         mountain = Mountain_Agent(self.num_mountains, mountain_tokens, self.mountain_width, mountain_min_peak, mountain_max_peak, mountain_min_walk_time, mountain_max_walk_time, mountain_min_turn, mountain_max_turn, self.mountain_smoothness, 1, 1)
         
         coast.generate(height_map)
+        print("finished coast")
         beach.generate(height_map)
+        print("finised beach")
         mountain.generate(height_map)
+        print("finished mountains")
         
         for i in height_map.get_map():
-            i.set_elevation(i.get_elevation() / 5)
+            i.set_elevation(i.get_elevation() / 10)
+        
+        
+        for i in range(1, self.width - 2):
+            for j in range(1, self.height - 2):
+                self.smooth_area(height_map, 2, i, j)
+        
         
         for beach in height_map.get_points_of_type('beach'):
             self.smooth_area(height_map, 3, beach.getX(), beach.getY())
         for beach in height_map.get_points_of_type('beach'):
-            self.smooth_area(height_map, 4, beach.getX(), beach.getY())
+            self.smooth_area(height_map, 6, beach.getX(), beach.getY())
         
         return height_map.get_map()
     
@@ -142,14 +150,14 @@ class Map_Generator:
     def smooth_area(self, height_map, width, x, y):
         for i in range(x - width, x + width):
             for j in range(y - width, y + width):
-                if x < 0 or y < 0 or x > self.width - 1 or y > self.height - 1:
+                if i < 0 or j < 0 or i > self.width - 1 or j > self.height - 1:
                     continue
                 if height_map.point(x, y).dist(height_map.point(i, j)) <= width:
                     self.smooth_point(height_map, i, j)
 
         
     
-blah = Map_Generator(1024, 1024, 1, 17, 4, 3, 5, 2, 5, 30, 30, 30, 100)
+blah = Map_Generator(1024, 1024, 1, 18, 6, 3, 5, 3, 5, 30, 30, 30, 100)
 point_map = blah.create_height_map()
 real_map2 = []
 for i in point_map:
@@ -167,23 +175,10 @@ real_map = np.reshape(real_map, (1024, 1024, 3))
 map_z = (65535*((real_map - real_map.min())/real_map.ptp())).astype(np.uint16)
 map_grey = map_z[:, :, 0]
 
-with open('map1.png', 'wb') as f:
+with open('map2.png', 'wb') as f:
     writer = png.Writer(width = map_z.shape[1], height = map_z.shape[0], bitdepth = 16, greyscale = True)
     map_list = map_grey.tolist()
     writer.write(f, map_list)
 
 
 
-
-
-
-for i in range(blah.width):
-    for j in range(blah.height):
-        blah.smooth_point(point_map, i, j)
-
-img = Image.fromarray(real_map2)
-img.show()
-
-
-real_map2 = [i.astype(np.uint8) for i in real_map2]
-real_map2 = np.reshape(real_map2, (1024, 1024))

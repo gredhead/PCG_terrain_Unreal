@@ -29,11 +29,9 @@ class Mountain_Agent:
     
     def check_point(self, height_map, x, y):
         if x < 0 or x > height_map.width - 1 or y < 0 or y > height_map.height - 1:
-            print("failed at point: " + str(x) + " " + str(y))
+            #print("failed at point: " + str(x) + " " + str(y))
             return None
         else:
-            if height_map.point(x, y).get_elevation() < self.min_elevation:
-                print("height too low " + str(x) + " " + str(y) + " " + str(height_map.point(x, y).get_elevation()) + " " + str(self.min_elevation))
             return height_map.point(x, y)
     
     def check_start(self, height_map):
@@ -43,7 +41,7 @@ class Mountain_Agent:
                     self.distance(round(self.x + i), round(self.y + j), round(self.x), round(self.y)) < self.width 
                     and self.check_point(height_map, round(self.x + i), round(self.y + j)) != None and height_map.point(round(self.x + i), round(self.y + j)).get_elevation() < self.min_elevation
                     ):
-                    print("bad starting area")
+                    #print("bad starting area")
                     return True
         return False
     
@@ -59,7 +57,7 @@ class Mountain_Agent:
                 self.pick_random_start(height_map)
                 count += 1
                 if count > 1000:
-                    print("Max mountain attempts reached, aborting mountain range creation")
+                    #print("Max mountain attempts reached, aborting mountain range creation")
                     return
         reached_edge = False
         self.reset_turn_timer()
@@ -78,7 +76,7 @@ class Mountain_Agent:
             time_since_turn += 1
     
     def elevate_circle(self, height_map):
-        print("mountain: " + str(self.x) + ' ' + str(self.y))
+        #print("mountain: " + str(self.x) + ' ' + str(self.y))
         height = random.randint(self.height_min, self.height_max)
         reached_edge = False
         width = self.width + random.randint(-self.width / 5, self.width / 5)
