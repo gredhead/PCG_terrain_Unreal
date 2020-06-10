@@ -26,6 +26,7 @@ class Mountain_Agent:
     def pick_random_start(self, height_map):
         self.x = math.floor(random.randrange(0, height_map.width - 1))
         self.y = math.floor(random.randrange(0, height_map.height - 1))
+        
     
     def check_point(self, height_map, x, y):
         if x < 0 or x > height_map.width - 1 or y < 0 or y > height_map.height - 1:
@@ -59,21 +60,22 @@ class Mountain_Agent:
                 if count > 1000:
                     #print("Max mountain attempts reached, aborting mountain range creation")
                     return
-        reached_edge = False
-        self.reset_turn_timer()
-        time_since_turn = 0
-        for i in range(0, self.tokens):
-            reached_edge = self.elevate_circle(height_map)
-            if reached_edge == True:
-                self.turn_left(False)
-            if self.turn_time > 0 and time_since_turn > self.turn_time:
-                self.make_foothills(height_map)
-                turn_amount = self.get_turn()
-                self.rotate_agent(turn_amount)
-                self.reset_turn_timer()
-                time_since_turn = 0
-            self.move_agent()
-            time_since_turn += 1
+            reached_edge = False
+            self.reset_turn_timer()
+            time_since_turn = 0
+            print("mountain start: " + str(self.x) + " " + str(self.y))
+            for i in range(0, self.tokens):
+                reached_edge = self.elevate_circle(height_map)
+                if reached_edge == True:
+                    self.turn_left(False)
+                if self.turn_time > 0 and time_since_turn > self.turn_time:
+                    self.make_foothills(height_map)
+                    turn_amount = self.get_turn()
+                    self.rotate_agent(turn_amount)
+                    self.reset_turn_timer()
+                    time_since_turn = 0
+                self.move_agent()
+                time_since_turn += 1
     
     def elevate_circle(self, height_map):
         #print("mountain: " + str(self.x) + ' ' + str(self.y))

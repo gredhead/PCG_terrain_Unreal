@@ -17,9 +17,15 @@ class Height_Map:
             
     def point(self, x, y):
         if x < 0 or x > self.width - 1 or y < 0 or y > self.height - 1:
-            print("Map Error: Attempted to access non existant point")
+            #print("Map Error: Attempted to access non existant point")
             return None
         return self.height_map[y * self.width + x]
+    
+    def get_width(self):
+        return self.width
+    
+    def get_height(self):
+        return self.height
     
     def get_neighbor(self, point, direction):
         on_left = False
