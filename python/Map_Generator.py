@@ -58,7 +58,7 @@ class Map_Generator:
     def set_coast_smoothness(self, amount):
         self.coast_smoothness = amount
     
-    def set_inalnd(self, amount):
+    def set_inland(self, amount):
         self.inland = amount
     
     def set_beach_height(self, amount):
@@ -90,10 +90,10 @@ class Map_Generator:
         coast_limit = coast_tokens / coast_agents
         coast_octave = math.pow(10, self.coast_uniformity)
         
-        mountain_tokens = math.ceil(island_area / self.mountain_width * .1)
+        mountain_tokens = math.ceil(island_area / self.mountain_width * .05)
         mountain_max_peak = self.mountain_max_height
         mountain_min_peak = mountain_max_peak
-        mountain_max_walk_time = math.ceil((1 - (self.squiggliness / 100)) * mountain_tokens * .05)
+        mountain_max_walk_time = math.ceil((1 - (self.squiggliness / 100)) * mountain_tokens * .1)
         mountain_min_walk_time = math.ceil(mountain_max_walk_time / 2)
         mountain_min_turn = self.squiggliness
         mountain_max_turn = self.squiggliness * 2
@@ -102,7 +102,7 @@ class Map_Generator:
         coast_start = height_map.point(math.floor(self.width / 2), math.floor(self.height / 2))
         coast = Coast_Agent(coast_start, coast_tokens, coast_limit)
         beach = Beach_Agent(self.inland, self.beach_height / 10, coast_octave)
-        mountain = Mountain_Agent(self.num_mountains, mountain_tokens, self.mountain_width, mountain_min_peak, mountain_max_peak, mountain_min_walk_time, mountain_max_walk_time, mountain_min_turn, mountain_max_turn, self.mountain_smoothness, 1, 3484615)
+        mountain = Mountain_Agent(self.num_mountains, mountain_tokens, self.mountain_width, mountain_min_peak, mountain_max_peak, mountain_min_walk_time, mountain_max_walk_time, mountain_min_turn, mountain_max_turn, self.mountain_smoothness, 1, 34615)
         erosion = Erosion_Agent()
         erosion.initialize(1024, True)
         
@@ -115,17 +115,19 @@ class Map_Generator:
         
         for i in range(1, self.width - 2):
             for j in range(1, self.height - 2):
-                if height_map.point(i, j).get_biome() != 'shore' or height_map.point(i, j).get_biome() != 'tallshore':
+                if height_map.point(i, j).get_biome() == 'mountain' or height_map.point(i, j).get_biome() == 'ridge':
                     self.smooth_area(height_map, 2, i, j)
+                elif height_map.point(i, j).get_biome() == 'shore' or height_map.point(i, j).get_biome() == 'tallshore':
+                    self.smooth_area_low(height_map, 2, i, j)
                 
         
         
         for beach in height_map.get_points_of_type('beach'):
-            self.smooth_area(height_map, 5, beach.getX(), beach.getY())
+            beach.set_elevation(beach.get_elevation() / 3)
         for beach in height_map.get_points_of_type('beach'):
             self.smooth_area(height_map, 6, beach.getX(), beach.getY())
         for beach in height_map.get_points_of_type('beach'):
-            self.smooth_area(height_map, 7, beach.getX(), beach.getY())
+            self.smooth_area(height_map, 8, beach.getX(), beach.getY())
             
         print("finished smoothing")
         #erosion.erode(height_map, 1024, 10000, True)
@@ -149,7 +151,7 @@ class Map_Generator:
         return height_map.get_map()
     
     def smooth_point(self, height_map, x, y):
-        total = height_map.point(x, y).get_elevation() * 5
+        total = height_map.point(x, y).get_elevation() * 2
         if height_map.point(x-1, y) != None:
             total += height_map.point(x-1, y).get_elevation()
         if height_map.point(x-2, y) != None:
@@ -166,8 +168,37 @@ class Map_Generator:
             total += height_map.point(x, y+1).get_elevation()
         if height_map.point(x, y+2) != None:
             total += height_map.point(x, y+2).get_elevation()
-        total /= 13
+        total /= 10
         height_map.point(x, y).set_elevation(total)
+    
+    def smooth_point_cliff(self, height_map, x, y):
+        total = height_map.point(x, y).get_elevation() * 10
+        if height_map.point(x-1, y) != None:
+            total += height_map.point(x-1, y).get_elevation()
+        if height_map.point(x-2, y) != None:
+            total += height_map.point(x-2, y).get_elevation()
+        if height_map.point(x+1, y) != None:
+            total += height_map.point(x+1, y).get_elevation()
+        if height_map.point(x+2, y) != None:
+            total += height_map.point(x+2, y).get_elevation()
+        if height_map.point(x, y-1) != None:
+            total += height_map.point(x, y-1).get_elevation()
+        if height_map.point(x, y-2) != None:
+            total += height_map.point(x, y-2).get_elevation()
+        if height_map.point(x, y+1) != None:
+            total += height_map.point(x, y+1).get_elevation()
+        if height_map.point(x, y+2) != None:
+            total += height_map.point(x, y+2).get_elevation()
+        total /= 18
+        height_map.point(x, y).set_elevation(total)
+    
+    def smooth_area_low(self, height_map, width, x, y):
+        for i in range(x - width, x + width):
+            for j in range(y - width, y + width):
+                if i < 0 or j < 0 or i > self.width - 1 or j > self.height - 1:
+                    continue
+                if height_map.point(x, y).dist(height_map.point(i, j)) <= width:
+                    self.smooth_point_cliff(height_map, i, j)
     
     def smooth_area(self, height_map, width, x, y):
         for i in range(x - width, x + width):
@@ -178,13 +209,29 @@ class Map_Generator:
                     self.smooth_point(height_map, i, j)
 
         
-#width, height, seed, coast_size, coast_smoothness, inland, beach_height, coast_uniformity, num_mountains, mountain_width, mountain_max_height, squiggliness, mountain_smoothness
-blah = Map_Generator(1024, 1024, 15684123, 17, 6, 3, 5, 3, 8, 25, 20, 20, 80)
+#                   width, height, seed,   coast_size, coast_smoothness, inland, beach_height, coast_uniformity, num_mountains, mountain_width, mountain_max_height, squiggliness, mountain_smoothness
+blah = Map_Generator(1024, 1024,   15123,  17,         3,                5,      5,            3,                6,             25,             25,                  50,           80)
 point_map = blah.create_height_map()
 real_map2 = []
 for i in point_map:
     real_map2.append(i.get_elevation())
     
+
+
+point_map[0].set_elevation(30)
+
+real_map = []
+for i in point_map:
+    real_map.append((i.get_elevation(), 0, 0))
+real_map = np.reshape(real_map, (1024, 1024, 3))
+
+map_z = (65535*((real_map - real_map.min())/real_map.ptp())).astype(np.uint16)
+map_grey = map_z[:, :, 0]
+
+with open('example13b2.png', 'wb') as f:
+    writer = png.Writer(width = map_z.shape[1], height = map_z.shape[0], bitdepth = 16, greyscale = True)
+    map_list = map_grey.tolist()
+    writer.write(f, map_list)
 
 
 point_map[0].set_elevation(300)
@@ -197,10 +244,7 @@ real_map = np.reshape(real_map, (1024, 1024, 3))
 map_z = (65535*((real_map - real_map.min())/real_map.ptp())).astype(np.uint16)
 map_grey = map_z[:, :, 0]
 
-with open('map2.png', 'wb') as f:
+with open('map18.png', 'wb') as f:
     writer = png.Writer(width = map_z.shape[1], height = map_z.shape[0], bitdepth = 16, greyscale = True)
     map_list = map_grey.tolist()
     writer.write(f, map_list)
-
-
-                

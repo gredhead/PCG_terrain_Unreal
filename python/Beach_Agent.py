@@ -5,7 +5,7 @@ import noise
 class Beach_Agent:
     def __init__(self, tokens, beach_noise_max, octave):
         self.tokens = tokens
-        self. beach_list = None
+        self.beach_list = None
         self.beach_noise_max = beach_noise_max
         self.octave = octave
     
